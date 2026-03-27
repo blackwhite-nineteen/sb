@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>摘聖杯</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #ffd700;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .subtitle {
+            color: #aaa;
+            font-size: 1rem;
+            margin-bottom: 40px;
+        }
+
+        .blocks-container {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 40px;
+            min-height: 120px;
+            align-items: center;
+        }
+
+        .block {
+            width: 60px;
+            height: 100px;
+            background: linear-gradient(145deg, #8b4513, #654321);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: transform 0.3s ease;
+        }
+
+        .block::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 60px;
+            background: linear-gradient(145deg, #d2691e, #8b4513);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+        }
+
+        .block.flat {
+            transform: rotate(0deg);
+        }
+
+        .block.round {
+            transform: rotate(180deg);
+        }
+
+        .block.animating {
+            animation: toss 1s ease-in-out;
+        }
+
+        @keyframes toss {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-100px) rotate(180deg); }
+            50% { transform: translateY(-150px) rotate(360deg); }
+            75% { transform: translateY(-100px) rotate(540deg); }
+        }
+
+        .result {
+            min-height: 120px;
+            margin-bottom: 30px;
+        }
+
+        .result-title {
+            font-size: 3rem;
+            color: #fff;
+            margin-bottom: 10px;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.5s ease;
+        }
+
+        .result-title.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .result-title.blessing { color: #ffd700; text-shadow: 0 0 20px #ffd700; }
+        .result-title.laugh { color: #ff6b6b; }
+        .result-title.no { color: #888; }
+
+        .result-desc {
+            color: #ccc;
+            font-size: 1.1rem;
+            opacity: 0;
+            transition: opacity 0.5s ease 0.2s;
+        }
+
+        .result-desc.show {
+            opacity: 1;
+        }
+
+        .btn-toss {
+            background: linear-gradient(145deg, #c41e3a, #8b0000);
+            color: white;
+            border: none;
+            padding: 20px 60px;
+            font-size: 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(196, 30, 58, 0.4);
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .btn-toss:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(196, 30, 58, 0.5);
+        }
+
+        .btn-toss:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-toss:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .history {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+        }
+
+        .history-title {
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .history-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .history-item {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .history-item.blessing { background: #ffd700; color: #333; }
+        .history-item.laugh { background: #ff6b6b; color: white; }
+        .history-item.no { background: #555; color: #ccc; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏮 摘聖杯 🏮</h1>
+        <p class="subtitle">誠心問事，神明指引</p>
+
+        <div class="blocks-container">
+            <div class="block" id="block1"></div>
+            <div class="block" id="block2"></div>
+        </div>
+
+        <div class="result">
+            <h2 class="result-title" id="resultTitle"></h2>
+            <p class="result-desc" id="resultDesc"></p>
+        </div>
+
+        <button class="btn-toss" id="tossBtn" onclick="tossBlocks()">摘杯問事</button>
+
+        <div class="history">
+            <p class="history-title">求籤紀錄</p>
+            <div class="history-list" id="historyList"></div>
+        </div>
+    </div>
+
+    <script>
+        let isTossing = false;
+
+        const results = {
+            blessing: {
+                title: '聖杯 ✨',
+                desc: '神明應允，諸事順遂',
+                class: 'blessing'
+            },
+            laugh: {
+                title: '笑杯 😄',
+                desc: '神明笑而不答，請再請示',
+                class: 'laugh'
+            },
+            no: {
+                title: '陰杯 🌑',
+                desc: '神明不允，另擇吉時',
+                class: 'no'
+            }
+        };
+
+        function tossBlocks() {
+            if (isTossing) return;
+            isTossing = true;
+
+            const btn = document.getElementById('tossBtn');
+            const block1 = document.getElementById('block1');
+            const block2 = document.getElementById('block2');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultDesc = document.getElementById('resultDesc');
+
+            // Disable button and clear previous result
+            btn.disabled = true;
+            resultTitle.classList.remove('show');
+            resultDesc.classList.remove('show');
+
+            // Add animation
+            block1.classList.add('animating');
+            block2.classList.add('animating');
+
+            // Generate random result after animation
+            setTimeout(() => {
+                // Random: 0 = flat, 1 = round
+                const b1 = Math.random() < 0.5 ? 0 : 1;
+                const b2 = Math.random() < 0.5 ? 0 : 1;
+
+                // Determine result
+                let result;
+                if (b1 !== b2) {
+                    result = results.blessing; // 一正一反 = 聖杯
+                } else if (b1 === 1) {
+                    result = results.laugh; // 兩反 = 笑杯
+                } else {
+                    result = results.no; // 兩正 = 陰杯
+                }
+
+                // Update block visuals
+                block1.className = 'block ' + (b1 === 0 ? 'flat' : 'round');
+                block2.className = 'block ' + (b2 === 0 ? 'flat' : 'round');
+
+                // Show result
+                resultTitle.textContent = result.title;
+                resultTitle.className = 'result-title ' + result.class;
+                resultDesc.textContent = result.desc;
+
+                setTimeout(() => {
+                    resultTitle.classList.add('show');
+                    resultDesc.classList.add('show');
+                }, 100);
+
+                // Add to history
+                addToHistory(result.class);
+
+                // Re-enable button
+                isTossing = false;
+                btn.disabled = false;
+            }, 1000);
+        }
+
+        function addToHistory(type) {
+            const historyList = document.getElementById('historyList');
+            const item = document.createElement('div');
+            item.className = 'history-item ' + type;
+
+            const labels = {
+                blessing: '聖',
+                laugh: '笑',
+                no: '陰'
+            };
+            item.textContent = labels[type];
+
+            historyList.insertBefore(item, historyList.firstChild);
+
+            // Keep only last 10
+            while (historyList.children.length > 10) {
+                historyList.removeChild(historyList.lastChild);
+            }
+        }
+    </script>
+</body>
+</html>
